@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/vketest/aspnet-app-znmhc:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/vketest/aspnet-app-znmhc:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: aspnet-app-znmhc
+        chartPath: charts/aspnet-app-znmhc
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/vketest/aspnet-app-znmhc"
+          image.tag: "{{.DIGEST_HEX}}"
